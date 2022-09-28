@@ -64,7 +64,7 @@ app.post('/giphy-find/textAnimator', async (req, res) => {
     var modeloId = null;
 
     if (param) {
-        console.log('> Gerando texto animado: ' + search + ' | Usuario: ' + payload.user_name);
+        console.log('> Gerando texto animado: ' + param + ' | Usuario: ' + payload.user_name);
 
         if (param.substring(param.length - 2).substring(0, 1) === ' ') {
             modeloId = param.substring(param.length - 1)
