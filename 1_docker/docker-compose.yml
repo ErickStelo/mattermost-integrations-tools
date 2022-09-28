@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  web:
+    container_name: meToolsAPI
+    build: ./dockerfile
+    image: debian/metoolsapi:1.0.0
+    restart: unless-stopped
+    networks:
+      - metoolsapi_network
+    ports:
+      - "8876:8876"
+    tty: true
+    # volumes:
+    #   - ../:/opt
+networks:
+    metoolsapi_network:
+      driver: bridge

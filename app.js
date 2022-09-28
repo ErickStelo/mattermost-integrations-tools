@@ -5,8 +5,8 @@ const cors = require('cors');
 const giphy = require('./helpers/giphy-controller');
 const mattermost = require('./helpers/mattermost-controller');
 const nodeSchedule = require('node-schedule');
-const { default: axios } = require('axios');
-
+const axios = require('axios');
+const appPort = 8876;
 
 const maxLogsRestart = 5;
 
@@ -19,6 +19,11 @@ app.use(express.json({
 }));
 
 app.use(cors());
+
+app.use(function(req,res,next){
+    console.log('MIDDLEWARE');
+    next();
+})
 
 app.post('/giphy-find/gif', async (req, res) => {
     var payload = req.body;
@@ -240,8 +245,15 @@ app.post('/mattermost/clean-channel', function (req, res, next) {
         res.send('Informe a quantidade de posts a serem excluidos');
     }
 
+
+    
+
 })
 
-app.listen(8090, () => {
-    console.log('Running on 8090');
+app.get('/test', function(req, res, next){
+    res.send(':::::: Running on port ' + appPort);
+})
+
+app.listen(appPort, () => {
+    console.log('Running on port', appPort);
 })
