@@ -10,7 +10,6 @@ services:
       - metoolsapi_network
     ports:
       - "8876:8876"
-    tty: true,
     logging:
       driver: none
 networks:

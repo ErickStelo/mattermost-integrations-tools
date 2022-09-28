@@ -116,7 +116,7 @@ function updateMattemostRestartTables() {
         text: markDown
     }]
 
-    mattermost.updatePost('', 'ipsfxbshyjbbmfsre3514cgi3w', { attachments: attachments })
+    mattermost.updatePost('', '9e49x6f5qi8jdxct9frq5a596a', { attachments: attachments })
 }
 
 async function buildJenkinsJob(job_name, params = null) {
