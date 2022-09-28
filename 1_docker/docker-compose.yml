@@ -10,9 +10,9 @@ services:
       - metoolsapi_network
     ports:
       - "8876:8876"
-    tty: true
-    # volumes:
-    #   - ../:/opt
+    tty: true,
+    logging:
+      driver: none
 networks:
     metoolsapi_network:
       driver: bridge

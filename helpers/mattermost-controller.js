@@ -3,7 +3,6 @@ const fs = require('fs');
 
 module.exports = {
     sendMessageForIdChannel: function (message, channelId, props = {attachments: []}) {
-        console.log('sdsadasd', message, channelId);
         if ((message || props.attachments.length > 0) && channelId) {
             return axios({
                 method: 'post',

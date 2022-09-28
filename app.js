@@ -20,18 +20,23 @@ app.use(express.json({
 
 app.use(cors());
 
-app.use(function(req,res,next){
-    console.log('MIDDLEWARE');
+app.use(function (req, res, next) {
+    console.log('> Running Middleware');
+    console.log('> Path:', req.path);
     next();
 })
 
 app.post('/giphy-find/gif', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
-    let content_url = await giphy.find(payload.text, 'gifs')
-    if (content_url) {
-        let message = `![](${content_url} "")`
-        await mattermost.sendMessageForIdChannel(message, channel_id)
+    const search = payload.text;
+    if (channel_id && search) {
+        console.log('> Buscando gifs de: ' + search + ' | Usuario: ' + payload.user_name);
+        let content_url = await giphy.find(payload.text, 'gifs')
+        if (content_url) {
+            let message = `![](${content_url} "")`
+            await mattermost.sendMessageForIdChannel(message, channel_id)
+        }
     }
     res.send();
 })
@@ -39,10 +44,14 @@ app.post('/giphy-find/gif', async (req, res) => {
 app.post('/giphy-find/sticker', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
-    let content_url = await giphy.find(payload.text, 'stickers')
-    if (content_url) {
-        let message = `![](${content_url} "")`
-        await mattermost.sendMessageForIdChannel(message, channel_id)
+    const search = payload.text;
+    if (channel_id && search) {
+        console.log('> Buscando sticker de: ' + search + ' | Usuario: ' + payload.user_name);
+        let content_url = await giphy.find(payload.text, 'stickers')
+        if (content_url) {
+            let message = `![](${content_url} "")`
+            await mattermost.sendMessageForIdChannel(message, channel_id)
+        }
     }
     res.send();
 })
@@ -52,24 +61,27 @@ app.post('/giphy-find/textAnimator', async (req, res) => {
     const channel_id = payload.channel_id;
 
     var param = payload.text;
-    var modelo = null
     var modeloId = null;
 
-    if (param.substring(param.length - 2).substring(0, 1) === ' ') {
-        modeloId = param.substring(param.length - 1)
-    } else {
-        modeloId = param.substring(param.length - 2)
-    }
+    if (param) {
+        console.log('> Gerando texto animado: ' + search + ' | Usuario: ' + payload.user_name);
 
-    if (isNaN(modeloId)) {
-        modeloId = null;
-    }
-    var texto = modeloId ? param.substring(param, param.length - 2) : param;
+        if (param.substring(param.length - 2).substring(0, 1) === ' ') {
+            modeloId = param.substring(param.length - 1)
+        } else {
+            modeloId = param.substring(param.length - 2)
+        }
 
-    let content_url = await giphy.generateText(texto, modeloId)
-    if (content_url) {
-        let message = `![](${content_url} "")`
-        await mattermost.sendMessageForIdChannel(message, channel_id)
+        if (isNaN(modeloId)) {
+            modeloId = null;
+        }
+        var texto = modeloId ? param.substring(param, param.length - 2) : param;
+
+        let content_url = await giphy.generateText(texto, modeloId)
+        if (content_url) {
+            let message = `![](${content_url} "")`
+            await mattermost.sendMessageForIdChannel(message, channel_id)
+        }
     }
     res.send();
 })
@@ -80,9 +92,9 @@ var restartsLogs = [];
 function updateMattemostRestartTables() {
     var markDown = `|  Próximos Restarts  |\n`
     markDown += '| :-----: | \n'
-
     scheduleList.forEach(shedule => {
-        markDown += `| Servidor ${shedule.server} |\n`
+        let time = shedule.date.getHours() + ':' + shedule.date.getMinutes()
+        markDown += `| Servidor ${shedule.server} - ${time} |\n`
     })
 
     if (scheduleList.length === 0) {
@@ -133,6 +145,33 @@ function addLogRestart(log) {
     restartsLogs.push(log)
 }
 
+app.post('/remover-restart', function(req, res, next){
+
+    var payload = req.body;
+    var param = payload.text;
+
+    if(param){
+        var param = param.trim();
+        var job = nodeSchedule.scheduledJobs[param]
+        if(job){
+            job.cancel();
+        }
+        var idx = scheduleList.findIndex(schedule => {
+            if (schedule.server == param) {
+                return true
+            }
+        })
+        if (idx >= 0) {
+            scheduleList.splice(idx, 1);
+        }
+        updateMattemostRestartTables();
+        res.send('Servidor removido da fila de restarts')
+    }else{
+        res.send('Servidor não informado!')
+    }
+   
+})
+
 app.post('/agendar-restart', function (req, res, next) {
 
     var payload = req.body;
@@ -161,11 +200,11 @@ app.post('/agendar-restart', function (req, res, next) {
             if (dateNow.getHours() <= 12) {
                 dateNow.setHours(12, 10);
             } else {
-                dateNow.setHours(22);
+                dateNow.setHours(22, 0);
             }
 
-            dateNow = new Date();
-            dateNow.setSeconds(dateNow.getSeconds() + 20)
+            // dateNow = new Date();
+            // dateNow.setSeconds(dateNow.getSeconds() + 20)
             var scheduleDate = new Date(dateNow);
             var obj = {
                 server: serverToRestart,
@@ -173,7 +212,7 @@ app.post('/agendar-restart', function (req, res, next) {
             };
 
             scheduleList.push(obj);
-            const job = nodeSchedule.scheduleJob(scheduleDate, () => {
+            const job = nodeSchedule.scheduleJob(`${serverToRestart}`,scheduleDate, () => {
                 console.log('> Executing job for restart server ', serverToRestart);
                 var idx = scheduleList.findIndex(schedule => {
                     if (schedule.server == serverToRestart) {
@@ -185,7 +224,7 @@ app.post('/agendar-restart', function (req, res, next) {
                 }
 
                 buildJenkinsJob('Fix_cliente_perigeus', { SERVER: serverToRestart }).then(success => {
-                    // buildJenkinsJob('TesteApi').then(success => {
+                // buildJenkinsJob('TesteApi').then(success => {
                     addLogRestart(`Servidor: ${serverToRestart} - Reiniciado em ${scheduleDate.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`)
                     updateMattemostRestartTables()
                 }).catch(error => {
@@ -246,12 +285,8 @@ app.post('/mattermost/clean-channel', function (req, res, next) {
     }
 
 
-    
 
-})
 
-app.get('/test', function(req, res, next){
-    res.send(':::::: Running on port ' + appPort);
 })
 
 app.listen(appPort, () => {

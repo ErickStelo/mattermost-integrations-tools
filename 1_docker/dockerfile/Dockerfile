@@ -28,7 +28,7 @@ RUN git clone https://erickstelo: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@github
 # RUN wget --no-check-certificate https://repo.zabbix.com/zabbix/6.0/debian/pool/main/z/zabbix-release/zabbix-release_6.0-1+debian9_all.deb
 RUN dpkg -i --force-overwrite /opt/metools-api/1_docker/aux/zabbix-release_6.0-1+debian9_all.deb
 RUN apt update
-RUN aapt install -y zabbix-sender
+RUN apt install -y zabbix-sender
 # RUN zabbix_sender -z 172.31.0.190 -s "coroty-api" -k status -o "asdasdasd" -vv
 
 
