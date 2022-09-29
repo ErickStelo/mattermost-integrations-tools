@@ -74,7 +74,7 @@ app.post('/content/sticker', async (req, res) => {
     }
 })
 
-app.post('/content-find/textAnimator', async (req, res) => {
+app.post('/content/textAnimator', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
 
