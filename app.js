@@ -37,8 +37,12 @@ app.post('/content/gif', async (req, res) => {
             let content_url = await contentSearch.find(payload.text, 'gifs')
             if (content_url) {
                 let message = `![](${content_url} "")`
-                await mattermost.sendMessageForIdChannel(message, channel_id)
-                res.send()
+
+                res.status(200).json({
+                    text: message,
+                    response_type: 'in_channel',
+                    username: 'Gif'
+                })
             }else{
                 res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
             }
@@ -62,8 +66,11 @@ app.post('/content/sticker', async (req, res) => {
             let content_url = await contentSearch.find(payload.text, 'stickers')
             if (content_url) {
                 let message = `![](${content_url} "")`
-                await mattermost.sendMessageForIdChannel(message, channel_id)
-                res.send()
+                res.status(200).json({
+                    text: message,
+                    response_type: 'in_channel',
+                    username: 'Sticker'
+                })
             }else{
                 res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
             }
@@ -98,7 +105,11 @@ app.post('/content/textAnimator', async (req, res) => {
         let content_url = await contentSearch.generateText(texto, modeloId)
         if (content_url) {
             let message = `![](${content_url} "")`
-            await mattermost.sendMessageForIdChannel(message, channel_id)
+            res.status(200).json({
+                text: message,
+                response_type: 'in_channel',
+                username: 'Texto Animado'
+            })
         }
     }
     res.send();
@@ -134,7 +145,7 @@ function updateMattemostRestartTables() {
         text: markDown
     }]
 
-    mattermost.updatePost('', '9e49x6f5qi8jdxct9frq5a596a', { attachments: attachments })
+    mattermost.updatePost('', 'askuaouadfrujdaxqot9ncbg1w', { attachments: attachments })
 }
 
 async function buildJenkinsJob(job_name, params = null) {
@@ -301,10 +312,6 @@ app.post('/mattermost/clean-channel', function (req, res, next) {
     } else {
         res.send('Informe a quantidade de posts a serem excluidos');
     }
-
-
-
-
 })
 
 app.listen(appPort, () => {
