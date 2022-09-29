@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const giphy = require('./helpers/giphy-controller');
+const contentSearch = require('./helpers/content-controller');
 const mattermost = require('./helpers/mattermost-controller');
 const nodeSchedule = require('node-schedule');
 const axios = require('axios');
@@ -26,37 +26,55 @@ app.use(function (req, res, next) {
     next();
 })
 
-app.post('/giphy-find/gif', async (req, res) => {
+app.post('/content/gif', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
-    const search = payload.text;
+    const search = payload.text.trim();
     if (channel_id && search) {
         console.log('> Buscando gifs de: ' + search + ' | Usuario: ' + payload.user_name);
-        let content_url = await giphy.find(payload.text, 'gifs')
-        if (content_url) {
-            let message = `![](${content_url} "")`
-            await mattermost.sendMessageForIdChannel(message, channel_id)
+
+        try {
+            let content_url = await contentSearch.find(payload.text, 'gifs')
+            if (content_url) {
+                let message = `![](${content_url} "")`
+                await mattermost.sendMessageForIdChannel(message, channel_id)
+                res.send()
+            }else{
+                res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
+            }
+        } catch (error) {
+            console.log(error);
+            res.send(error.message)
         }
+
+        
     }
-    res.send();
 })
 
-app.post('/giphy-find/sticker', async (req, res) => {
+app.post('/content/sticker', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
     const search = payload.text;
     if (channel_id && search) {
         console.log('> Buscando sticker de: ' + search + ' | Usuario: ' + payload.user_name);
-        let content_url = await giphy.find(payload.text, 'stickers')
-        if (content_url) {
-            let message = `![](${content_url} "")`
-            await mattermost.sendMessageForIdChannel(message, channel_id)
+
+        try {
+            let content_url = await contentSearch.find(payload.text, 'stickers')
+            if (content_url) {
+                let message = `![](${content_url} "")`
+                await mattermost.sendMessageForIdChannel(message, channel_id)
+                res.send()
+            }else{
+                res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
+            }
+        } catch (error) {
+            console.log(error);
+            res.send(error.message)
         }
     }
-    res.send();
 })
 
-app.post('/giphy-find/textAnimator', async (req, res) => {
+app.post('/content-find/textAnimator', async (req, res) => {
     var payload = req.body;
     const channel_id = payload.channel_id;
 
@@ -77,7 +95,7 @@ app.post('/giphy-find/textAnimator', async (req, res) => {
         }
         var texto = modeloId ? param.substring(param, param.length - 2) : param;
 
-        let content_url = await giphy.generateText(texto, modeloId)
+        let content_url = await contentSearch.generateText(texto, modeloId)
         if (content_url) {
             let message = `![](${content_url} "")`
             await mattermost.sendMessageForIdChannel(message, channel_id)
