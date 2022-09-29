@@ -41,7 +41,7 @@ app.post('/content/gif', async (req, res) => {
                 res.status(200).json({
                     text: message,
                     response_type: 'in_channel',
-                    username: 'Gif'
+                    username: payload.user_name
                 })
             }else{
                 res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
@@ -69,7 +69,7 @@ app.post('/content/sticker', async (req, res) => {
                 res.status(200).json({
                     text: message,
                     response_type: 'in_channel',
-                    username: 'Sticker'
+                    username: payload.user_name
                 })
             }else{
                 res.send('Nenhum conteudo encontrado. Tente novamente com outras palavras para pesquisa.')
@@ -108,7 +108,7 @@ app.post('/content/textAnimator', async (req, res) => {
             res.status(200).json({
                 text: message,
                 response_type: 'in_channel',
-                username: 'Texto Animado'
+                username: payload.user_name
             })
         }
     }
